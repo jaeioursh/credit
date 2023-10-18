@@ -3,18 +3,14 @@ An example using the rover domain gym-style interface and the standard, included
 This is a minimal example, showing the minimal Gym interface.
 """
 from os import killpg
-import os
 import numpy as np
 import sys
 import multiprocessing as mp
 
 
 from rover_domain_core_gym import RoverDomainGym
-import pyximport
-pyximport.install()
-from teaming.cceamtl import *
+import code.ccea_2 as ccea
 import code.agent_domain_2 as domain
-from code.mod import *
 
 #import mods
 from teaming.learnmtl import learner
@@ -39,7 +35,7 @@ def rand_loc(n):
 
 
 #print(vals)
-def make_env(nagents,coup=2,rand=0,PERM=0):
+def make_env(nagents,rand=0):
     vals =np.array([0.8,1.0,0.6,0.3,0.2,0.1])
     
     if rand:
@@ -69,64 +65,46 @@ def make_env(nagents,coup=2,rand=0,PERM=0):
  
 
 
-    sim.data["Coupling"]=coup
+    sim.data["Coupling"]=2
     sim.data['Number of Agents']=nagents
 
-    if PERM==1:
-        sim.data["Observation Function"]=doAgentSense_highres
-    if PERM==2:
-        sim.data["Observation Function"]=doAgentSense_lowrange
-    if PERM==3:
-        sim.worldTrainStepFuncCol[0]=doAgentMove_half
-        sim.worldTestStepFuncCol[0]=doAgentMove_half
-
-    obs=sim.reset()
-
-    sim.data['Agent Positions BluePrint'][-1]=[15.0,15.0]
-    ang=np.pi/2
-    sim.data['Agent Orientations BluePrint'][-1]=[np.cos(ang),np.sin(ang)]
     obs=sim.reset()
     return sim
 
 
 import time
 
-def test1(trial,n_agents,n_teams,team_swap_frq,train_flag):
+def test1(trial,k,n,train_flag,n_teams):
     #print(np.random.get_state())[1]    
     np.random.seed(int(time.time()*100000)%100000)
-    env=make_env(n_agents)
-
-    with open("save/a.pkl","rb") as f:
-        arry = pickle.load(f)
-    agent=Evo_MLP(8,2,20)
-
+    env=make_env(n)
  
     OBS=env.reset()
 
-    controller = learner(n_agents,n_teams,env,agent,arry)
+    controller = learner(n,k,env)
     #controller.set_teams(n_teams)
 
-    for i in range(10001):
+    for i in range(4001):
 
         
         #controller.randomize()
-        if i%team_swap_frq==0:
+        if i%100000==0:
             controller.set_teams(n_teams)
 
-        if i%10==0:
+        if i%1==0:
             controller.test(env)
 
         r=controller.run(env,train_flag)# i%100 == -10)
         print(i,r,len(controller.team),train_flag)
         
             
-        if i%10==0:
-           
-            
-            folder="save/testing/data"+"-".join([str(S) for S in [n_agents,n_teams,team_swap_frq,trial]])
-            if not os.path.exists("save/testing/"):
-                os.makedirs("save/testing/")
-            controller.save(folder,False)
+        if i%50==0:
+            #controller.save("tests/q"+str(frq)+"-"+str(trial)+".pkl")
+            #controller.save("logs/"+str(trial)+"r"+str(16)+".pkl")
+            #controller.save("tests/jj"+str(121)+"-"+str(trial)+".pkl")
+            #controller.log.clear("hist")
+            #controller.put("hist",controller.hist)
+            controller.save("tests/very/"+str(k)+"-"+str(n)+"-"+str(trial)+"-"+str(train_flag)+".pkl")
 
     #train_flag=0 - D
     #train_flag=1 - Neural Net Approx of D
@@ -150,22 +128,22 @@ if __name__=="__main__":
         print(s.getvalue())
         
     else:
-        for q in range(1,4):
+        for train in [3,4,5]:
             procs=[]
-            for n_teams in [25,100]:
-                for team_swap_frq in [500,5000]:
-                    teams=100
-                    for i in range(4*q,4*(q+1)):
-                        trial=i
-                        n_agents=4
-                        train_flag=4
-                        p=mp.Process(target=test1,args=(trial,n_agents,n_teams,team_swap_frq,train_flag))
-                        p.start()
-                        time.sleep(0.05)
-                        procs.append(p)
-                        #p.join()git ad
-            for p in procs:
-                p.join()
+            k=5
+            n=4
+            for k,n in [[7,4]]:
+                teams=100
+                for i in range(12,18):
+                    if train==1 or train==3:
+                        i-=12
+                    p=mp.Process(target=test1,args=(i,k,n,train,teams))
+                    p.start()
+                    time.sleep(0.05)
+                    procs.append(p)
+                    #p.join()
+                for p in procs:
+                    p.join()
 
 # 100 - static
 # 200 - minimax single
