@@ -184,22 +184,22 @@ def clearFitness(data):
         for policy in populationCol[agentIndex]:
             policy.fitness = 0
     
-def assignCceaPolicies(data):
+def assignCceaPolicies(data,team):
     number_agents = data['Number of Types']
     populationCol = data['Agent Populations']
     worldIndex = data["World Index"]
     policyCol = [None] * number_agents
-    for idx in range(number_agents):
-        policyCol[idx] = populationCol[idx][worldIndex]
+    for idx,agentIndex in zip(range(number_agents),team):
+        policyCol[idx] = populationCol[agentIndex][worldIndex]
     data["Agent Policies"] = policyCol
     
 
-def assignBestCceaPolicies(data):
+def assignBestCceaPolicies(data,team):
     number_agents = data['Number of Types']
     populationCol = data['Agent Populations']
     policyCol = [None] * number_agents
-    for idx in range(number_agents):
-        policyCol[idx] = max(populationCol[idx], key = lambda policy: policy.fitness)
+    for idx,agentIndex in zip(range(number_agents),team):
+        policyCol[idx] = max(populationCol[agentIndex], key = lambda policy: policy.fitness)
         #policyCol[agentIndex] = populationCol[agentIndex][0]
     data["Agent Policies"] = policyCol
 
@@ -216,12 +216,12 @@ def rewardCceaPolicies(data,team):
 
 
     
-cpdef evolveCceaPolicies(data): 
+cpdef evolveCceaPolicies(data,team): 
     cdef int number_agents = data['Number of Types']
     populationCol = data['Agent Populations']
     cdef int agentIndex, matchIndex, halfPopLen
     halfPopLen = int(len(populationCol[0])//2)
-    for agentIndex in range(number_agents):
+    for agentIndex in team:
 
         population = populationCol[agentIndex]
         if 1:

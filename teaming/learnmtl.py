@@ -29,9 +29,10 @@ def comb(n, r):
     return numer // denom  # or / in Python 2
 
 
+
 class Net():
-    def __init__(self,hidden=20):#*4
-        learning_rate=5e-3
+    def __init__(self,hidden=20*4,lr=5e-3,loss_fn=0):#*4
+        learning_rate=lr
         self.model = torch.nn.Sequential(
             torch.nn.Linear(8, hidden),
             torch.nn.Tanh(),
@@ -39,7 +40,12 @@ class Net():
             torch.nn.Tanh(),
             torch.nn.Linear(hidden,1)
         )
-        self.loss_fn = torch.nn.MSELoss(reduction='sum')
+        if loss_fn==0:
+            self.loss_fn = torch.nn.MSELoss(reduction='sum')
+        else:
+            self.loss_fn = self.alignment_loss
+
+        self.sig = torch.nn.Sigmoid()
 
         self.optimizer = torch.optim.RMSprop(self.model.parameters(), lr=learning_rate)
         #self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
@@ -58,6 +64,19 @@ class Net():
         loss.backward()
         self.optimizer.step()
         return loss.detach().item()
+
+    def alignment_loss(self,o, t):
+        ot=torch.transpose(o,0,1)
+        tt=torch.transpose(t,0,1)
+
+        O=o-ot
+        T=t-tt
+
+        align = torch.mul(O,T)
+        #print(align)
+        align = self.sig(align)
+        loss = -torch.mean(align)
+        return loss
     
 
 def helper(t,k,n):
@@ -80,86 +99,142 @@ def robust_sample(data,n):
     return smpl
 
 class learner:
-    def __init__(self,nagents,types,sim,external_agent,ext_params):
+    def __init__(self,nagents,types,sim,params):
+        self.lr, self.hidden, self.batch, self.replay_size= params
+        self.hidden,self.batch,self.replay_size=[int (q) for q in [self.hidden,self.batch,self.replay_size]]
+
         self.log=logger()
         self.nagents=nagents
         
-        self.external_agent=external_agent
-        self.ext_params=ext_params
         self.itr=0
         self.types=types
         self.team=[]
         self.index=[]
-        self.Dapprox=[Net() for i in range(self.nagents)]
+        self.Dapprox=[Net() for i in range(self.types)]
+        self.align=[Net(self.hidden,self.lr,1) for i in range(self.types)]
 
-        
-        self.test_teams=self.set_test_teams()
+        self.every_team=self.many_teams()
+        self.test_teams=self.every_team
         sim.data["Number of Policies"]=32
 
-        self.hist=[deque(maxlen=self.types*2000) for i in range(self.nagents)]
-        self.zero=[deque(maxlen=100) for i in range(self.nagents)]
+        self.hist=[deque(maxlen=len(self.test_teams)*2000) for i in range(types)]
+        self.histalign=[deque(maxlen=self.replay_size) for i in range(types)]
 
-        initCcea(input_shape=8, num_outputs=2, num_units=20, num_types=nagents)(sim.data)
+        initCcea(input_shape=8, num_outputs=2, num_units=20, num_types=types)(sim.data)
         
 
     def act(self,S,data,trial):
         policyCol=data["Agent Policies"]
-        policyCol[-1]=self.external_agent
         A=[]
-        for i in range(len(policyCol)):
-            s=S[i]
-            pol=policyCol[i]
-            if i==len(policyCol)-1:
-                s[:4]=0
+        for s,pol in zip(S,policyCol):
+  
             a = pol.get_action(s)
             A.append(a)
         return np.array(A)*2.0
     
 
-    def set_test_teams(self):
-        team=[]
+    def randomize(self):
+        length=len(self.every_team)
+        teams=[]
+        
+        idx=np.random.choice(length)
+        t=self.every_team[idx].copy()
+        #np.random.shuffle(t)
+        teams.append(t)
+        self.team=teams
+        #self.team=np.random.randint(0,self.types,self.nagents)
+    def most_similar(self):
+        aprx=[self.aprx[i] for i in self.index]
+        n_teams=len(aprx)
+        dists=np.zeros((n_teams,n_teams))+1e9
+        for i in range(n_teams):
+            for j in range(n_teams):
+                if i!=j:
+                    t1,f1=aprx[i]
+                    t2,f2=aprx[j]
+                    f1,f2=np.array(f1),np.array(f2)
+                    diff=f1[np.in1d(t1,t2)]-f2[np.in1d(t2,t1)]
+                    dist=np.sqrt(np.sum(diff*diff))/np.sqrt(len(diff))
+                    dists[i,j]=dist 
+                    dists[j,i]=dist
+        return np.argmin(np.sum(dists,axis=0))
+        ind = np.unravel_index(np.argmin(dists, axis=None), dists.shape)
+        #print(ind)
+        if np.random.random()>0.5:
+            return ind[0]
+        else:
+            return ind[1]
+    def minmax(self):
+        index=[]
+        idxs=[[] for i in range(self.types)]
+        for j in range(len(self.aprx)):
+            aprx=self.aprx[j]
+            for i in range(len(aprx[0])):
+                t,f=aprx[0][i],aprx[1][i]
 
-        for i in range(100):
-            val=None
-            while val is None:
+                idxs[t].append([j,f])
+        for i in idxs:
+            index.append(min(i,key=lambda x:x[1])[0])
+            #index.append(max(i,key=lambda x:x[1])[0])
+    
+        return np.unique(index)
 
-                idx= tuple([np.random.randint(q) for q in self.ext_params.shape])
-                val=self.ext_params[idx]
-            team.append(idx)
-        return team
+    def minmaxsingle(self):
+        aprx=[self.aprx[i] for i in self.index]
+        avgs=[[] for i in range(self.types)]
+        for apr in aprx:
+            t,f=apr
+            for i in range(len(f)):
+                avgs[t[i]].append(f[i])
+        avgs=np.asanyarray(avgs,dtype=object)
+        avg=np.array([np.mean(a) for a in avgs])
+
+        dists=[]
+        for apr in aprx:
+            
+            t,f=apr
+            for i in range(len(f)):
+                f[i]=abs(f[i]-avg[t[i]])
+            dists.append(max(f))
+        return np.argmin(dists)
 
 
             
 
 
-    def set_teams(self,rand=0):
-        self.team=[]
-
-        for i in range(self.types):
-            val=None
-            while val is None:
-
-                idx= tuple([np.random.randint(q) for q in self.ext_params.shape])
-                val=self.ext_params[idx]
-            self.team.append(idx)
-
+    def set_teams(self,N,rand=0):
+        if N >= len(self.every_team):
+            self.team=self.every_team
+            return
+        if len(self.team)==0:
+            self.index = np.random.choice(len(self.every_team), N, replace=False)  
+        elif 0:
+            self.index=self.minmax()
+        else:
+            i=np.random.randint(0,len(self.every_team))
+            while i in self.index:
+                i=np.random.randint(0,len(self.every_team))
+            if rand:
+                j=np.random.randint(0,len(self.index))
+            elif 0:
+                j=self.minmaxsingle()
+            else:
+                j=self.most_similar()
+            self.index[j]=i
         
-        
-        
-
-    def set_single(self,team):
-        params=self.ext_params[team][0]
-        params=[np.copy(np.array(p)) for p in params]
-        self.external_agent.__setstate__(params)
+            
 
 
-    def save(self,folder,net_save=True):
+        self.index=np.sort(self.index)
+        self.team=[self.every_team[i] for i in self.index]
+
+
+    def save(self,fname="log.pkl"):
         print("saved")
-        self.log.save(folder+".pkl")
+        self.log.save(fname)
         #print(self.Dapprox[0].model.state_dict()['4.bias'].is_cuda)
-        if net_save:
-            netinfo={i:self.Dapprox[i].model.state_dict() for i in range(len(self.Dapprox))}
-            torch.save(netinfo,folder+".mdl")
+        netinfo={i:self.Dapprox[i].model.state_dict() for i in range(len(self.Dapprox))}
+        torch.save(netinfo,fname+".mdl")
 
     #train_flag=0 - D
     #train_flag=1 - Neural Net Approx of D
@@ -177,12 +252,13 @@ class learner:
         for worldIndex in range(populationSize):
             env.data["World Index"]=worldIndex
             
+            #for agent_idx in range(self.types):
+            
             for team in self.team:
-                self.set_single(team)
                 s = env.reset() 
                 done=False 
                 #assignCceaPoliciesHOF(env.data)
-                assignCceaPolicies(env.data)
+                assignCceaPolicies(env.data,team)
                 S,A=[],[]
                 while not done:
                     self.itr+=1
@@ -202,24 +278,25 @@ class learner:
                     
                     pols[i].D.append(d)
                     pols[i].S.append([])
-                    if train_flag==1 or train_flag==2 or train_flag==3:
-                        for j in range(len(S)):
-                            z=[S[j][i],A[j][i],g]
-                            #if d!=0:
-                            self.hist[i].append(z)
-                            #else:
-                            #    self.zero[team[i]].append(z)
-                            pols[i].S[-1].append(S[j][i])
-                        
-                        pols[i].Z.append(S[-1][i])
+                    for j in range(len(S)):
+                        z=[S[j][i],A[j][i],g]
+                        #if d!=0:
+                        self.hist[team[i]].append(z)
+                        #else:
+                        #    self.zero[team[i]].append(z)
+                        pols[i].S[-1].append(S[j][i])
+                    self.histalign[team[i]].append(z)
+                    pols[i].Z.append(S[-1][i])
                         
                 G.append(g)
             
 
-        if train_flag==1 or train_flag==2 or train_flag==3:
+        if train_flag==1 :
+            self.updateA(env)
+        if train_flag==2 or train_flag==3:
             self.updateD(env)
-        
-        for t in range(self.nagents):
+        train_set=np.unique(np.array(self.team))
+        for t in np.unique(np.array(self.team)):
             #if train_flag==1:
             #    S_sample=self.state_sample(t)
 
@@ -234,18 +311,22 @@ class learner:
 
                 if train_flag==3:
                     p.D=[self.Dapprox[t].feed(np.array(p.S[i])) for i in range(len(p.S))]
-                    #self.log.store("ctime",[np.argmax(i) for i in p.D])
+                    self.log.store("ctime",[np.argmax(i) for i in p.D])
                     p.D=[np.max(i) for i in p.D]
                     #p.D=[(self.Dapprox[t].feed(np.array(p.S[i])))[-1] for i in range(len(p.S))]
                     #print(p.D)
                     p.fitness=np.sum(p.D)
                     
-                if train_flag==1 or train_flag==2:
+                if train_flag==1:
+                    p.D=list(self.align[t].feed(np.array(p.Z)))
+                    p.fitness=np.sum(p.D)
+                
+                if train_flag==2:
                     #self.approx(p,t,S_sample)
                     p.D=list(self.Dapprox[t].feed(np.array(p.Z)))
-                    p.fitness=np.sum(p.D)
-                    if train_flag==2:
-                        p.fitness=np.sum(p.G)-np.sum(p.D)
+                    #p.fitness=np.sum(p.D)
+                    
+                    p.fitness=np.sum(p.G)-np.sum(p.D)
                         
                     #print(p.fitness)
 
@@ -257,15 +338,28 @@ class learner:
                 p.D=[]
                 p.Z=[]
                 p.S=[]
-        evolveCceaPolicies(env.data)
+        evolveCceaPolicies(env.data,train_set)
 
         self.log.store("reward",max(G))      
         return max(G)
 
+    def updateA(self,env):
+        
+        for i in np.unique(np.array(self.team)):
+            for q in range(100):
+                S,A,D=[],[],[]
+                SAD=robust_sample(self.histalign[i],self.batch)
+                for samp in SAD:
+                    S.append(samp[0])
+                    A.append(samp[1])
+                    D.append([samp[2]])
+                S,A,D=np.array(S),np.array(A),np.array(D)
+                Z=S#np.hstack((S,A))
+                self.align[i].train(Z,D)
 
     def updateD(self,env):
         
-        for i in range(self.nagents):
+        for i in np.unique(np.array(self.team)):
             for q in range(64):
                 S,A,D=[],[],[]
                 SAD=robust_sample(self.hist[i],100)
@@ -318,35 +412,32 @@ class learner:
         Rs=[]
         teams=copy(self.test_teams)
         self.log.clear("teams")
-        self.log.store("teams",teams)
-        #self.log.store("idxs",self.index)
+        self.log.store("teams",self.every_team)
+        self.log.store("idxs",self.index)
 
         aprx=[]
-        team_pos=[]
         for i in range(len(teams)):
 
             
             
-            #team=np.array(teams[i]).copy()ffmpeg -i input_file.mp4 -f mov output_file.mov
+            #team=np.array(teams[i]).copy()
             #np.random.shuffle(team)
             self.team=[teams[i]]
             team=teams[i]
-            self.set_single(team)
             #for i in range(itrs):
-            assignBestCceaPolicies(env.data)
+            assignBestCceaPolicies(env.data,team)
             #self.randomize()
             s=env.reset()
             done=False
             R=[]
             i=0
+            self.log.store("types",self.team[0].copy(),i)
             
-            positions=[[np.array(env.data["Agent Positions"]),np.array(env.data["Agent Orientations"])]]
             while not done:
                 
-                #self.log.store("position",np.array(env.data["Agent Positions"]),i)
+                self.log.store("position",np.array(env.data["Agent Positions"]),i)
                 
                 action=self.act(s,env.data,0)
-                positions.append([np.array(env.data["Agent Positions"]),np.array(env.data["Agent Orientations"])])
                 #action=self.idx2a(env,[1,1,3])
                 #print(action)
                 sp, r, done, info = env.step(action)
@@ -355,16 +446,14 @@ class learner:
                 
                 s=sp
                 i+=1
-            team_pos.append(positions)
             g=env.data["Global Reward"]
             ap=[]
-            #for t,State in zip(self.team[0],s):
-            #    
-            #    ap.append(self.Dapprox[t].feed(np.array(State)))
-            #aprx.append([self.team[0],ap])
+            for t,State in zip(self.team[0],s):
+                
+                ap.append(self.Dapprox[t].feed(np.array(State)))
+            aprx.append([self.team[0],ap])
             Rs.append(g)
-        self.log.store("position",team_pos)
-        #self.log.store("aprx",aprx)
+        self.log.store("aprx",aprx)
         self.log.store("test",Rs)
         self.aprx=aprx
         self.team=old_team
@@ -379,9 +468,22 @@ class learner:
             sp, r, done, info = env.step(a)
         return [0.0]
             
+    def many_teams(self):
+        teams=[]
+        C=comb(self.types,self.nagents)
+        print("Combinations: "+str(C))
+        if C<100:
+            for t in combinations(range(self.types),self.nagents):
+                teams.append(list(t))
+        else:
+            for i in range(100):
+                teams.append(self.sample())
+
+        return teams
     
-    
-    
+    def sample(self):
+        n,k=self.nagents,self.types
+        return np.sort(np.random.choice(k,n,replace=False))
 
 
 def test_net():

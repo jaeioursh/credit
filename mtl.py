@@ -34,7 +34,7 @@ def rand_loc(n):
     return np.array(pos)
 
 
-#print(vals)
+#pri alignment multiagent tumernt(vals)
 def make_env(nagents,rand=0):
     vals =np.array([0.8,1.0,0.6,0.3,0.2,0.1])
     
@@ -74,17 +74,18 @@ def make_env(nagents,rand=0):
 
 import time
 
-def test1(trial,k,n,train_flag,n_teams):
+def test1(trial,k,n,train_flag,n_teams,save=1,params=None):
     #print(np.random.get_state())[1]    
     np.random.seed(int(time.time()*100000)%100000)
     env=make_env(n)
- 
+    if params is None:
+        params=[5e-3, 80, 32,1000]
     OBS=env.reset()
 
-    controller = learner(n,k,env)
+    controller = learner(n,k,env,params)
     #controller.set_teams(n_teams)
-
-    for i in range(4001):
+    R=[]
+    for i in range(1001):
 
         
         #controller.randomize()
@@ -94,9 +95,10 @@ def test1(trial,k,n,train_flag,n_teams):
         if i%1==0:
             controller.test(env)
 
-        r=controller.run(env,train_flag)# i%100 == -10)
-        print(i,r,len(controller.team),train_flag)
-        
+        r=controller.run(env,train_flag)
+        if save:
+            print(i,r,len(controller.team),train_flag)
+        R.append(r)
             
         if i%50==0:
             #controller.save("tests/q"+str(frq)+"-"+str(trial)+".pkl")
@@ -104,10 +106,11 @@ def test1(trial,k,n,train_flag,n_teams):
             #controller.save("tests/jj"+str(121)+"-"+str(trial)+".pkl")
             #controller.log.clear("hist")
             #controller.put("hist",controller.hist)
-            controller.save("tests/very/"+str(k)+"-"+str(n)+"-"+str(trial)+"-"+str(train_flag)+".pkl")
-
+            if save:
+                controller.save("save/"+str(k)+"-"+str(n)+"-"+str(trial)+"-"+str(train_flag)+".pkl")
+    return -max(R[-20:])
     #train_flag=0 - D
-    #train_flag=1 - Neural Net Approx of D
+    #train_flag=1 - alignment network
     #train_flag=2 - counterfactual-aprx
     #train_flag=3 - fitness critic
     #train_flag=4 - D*
@@ -128,15 +131,14 @@ if __name__=="__main__":
         print(s.getvalue())
         
     else:
-        for train in [3,4,5]:
+        for train in [1]:
             procs=[]
             k=5
             n=4
-            for k,n in [[7,4]]:
+            for k in [4]:
+                n=k
                 teams=100
-                for i in range(12,18):
-                    if train==1 or train==3:
-                        i-=12
+                for i in range(1):
                     p=mp.Process(target=test1,args=(i,k,n,train,teams))
                     p.start()
                     time.sleep(0.05)
