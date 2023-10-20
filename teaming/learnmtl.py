@@ -55,17 +55,19 @@ class Net():
         return pred.detach().numpy()
         
     
-    def train(self,x,y,n=5,verb=0):
+    def train(self,x,y,shaping=False,n=5,verb=0):
         x=torch.from_numpy(x.astype(np.float32))
         y=torch.from_numpy(y.astype(np.float32))
         pred=self.model(x)
-        loss=self.loss_fn(pred,y)
+        loss=self.loss_fn(pred,y,shaping)
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
         return loss.detach().item()
 
-    def alignment_loss(self,o, t):
+    def alignment_loss(self,o, t,shaping=False):
+        if shaping:
+            o=o+t
         ot=torch.transpose(o,0,1)
         tt=torch.transpose(t,0,1)
 
@@ -291,8 +293,8 @@ class learner:
                 G.append(g)
             
 
-        if train_flag==1 :
-            self.updateA(env)
+        if train_flag==1 or train_flag==0:
+            self.updateA(train_flag)
         if train_flag==2 or train_flag==3:
             self.updateD(env)
         train_set=np.unique(np.array(self.team))
@@ -317,9 +319,12 @@ class learner:
                     #print(p.D)
                     p.fitness=np.sum(p.D)
                     
-                if train_flag==1:
+                if train_flag==1 or train_flag==0:
                     p.D=list(self.align[t].feed(np.array(p.Z)))
+
                     p.fitness=np.sum(p.D)
+                    if train_flag==0:
+                        p.fitness+=np.sum(p.G)
                 
                 if train_flag==2:
                     #self.approx(p,t,S_sample)
@@ -331,9 +336,9 @@ class learner:
                     #print(p.fitness)
 
                     
-                if train_flag==0:
-                    d=p.D[-1]
-                    p.fitness=d
+                #if train_flag==0:
+                #    d=p.D[-1]
+                #    p.fitness=d
                 p.G=[]
                 p.D=[]
                 p.Z=[]
@@ -343,7 +348,7 @@ class learner:
         self.log.store("reward",max(G))      
         return max(G)
 
-    def updateA(self,env):
+    def updateA(self,train_flag):
         
         for i in np.unique(np.array(self.team)):
             for q in range(100):
@@ -355,7 +360,10 @@ class learner:
                     D.append([samp[2]])
                 S,A,D=np.array(S),np.array(A),np.array(D)
                 Z=S#np.hstack((S,A))
-                self.align[i].train(Z,D)
+                if train_flag==0:
+                    self.align[i].train(Z,D,1)
+                else:
+                    self.align[i].train(Z,D,0)
 
     def updateD(self,env):
         
