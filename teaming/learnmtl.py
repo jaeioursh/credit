@@ -238,8 +238,8 @@ class learner:
         netinfo={i:self.Dapprox[i].model.state_dict() for i in range(len(self.Dapprox))}
         torch.save(netinfo,fname+".mdl")
 
-    #train_flag=0 - D
-    #train_flag=1 - Neural Net Approx of D
+    #train_flag=0 - align w/shape
+    #train_flag=1 - align
     #train_flag=2 - counterfactual-aprx
     #train_flag=3 - fitness critic
     #train_flag=4 - D*

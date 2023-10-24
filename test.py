@@ -37,10 +37,12 @@ class Net():
         loss=self.loss_fn(pred,y)
         self.optimizer.zero_grad()
         loss.backward()
+        #print([s.grad.shape for s in self.model.parameters()])
         self.optimizer.step()
         return loss.detach().item()
     
     def alignment_loss(self,o, t):
+        o=o+t
         ot=torch.transpose(o,0,1)
         tt=torch.transpose(t,0,1)
 
@@ -57,9 +59,9 @@ net=Net()
 x=np.array([[0,0],[1,0],[0,1],[1,1]])
 y=np.array([[0],[1],[1],[0]])
 
-x=np.vstack([x for _ in range (2)])
-y=np.vstack([y for _ in range (2)])
+x=np.vstack([x for _ in range (1)])
+y=np.vstack([y for _ in range (1)])
 print(x.shape,y.shape)
-for i in range(10000):
+for i in range(1000):
     print(i,net.train(x,y))
 print(net.feed(x))

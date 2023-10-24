@@ -85,7 +85,7 @@ def test1(trial,k,n,train_flag,n_teams,save=1,params=None):
     controller = learner(n,k,env,params)
     #controller.set_teams(n_teams)
     R=[]
-    for i in range(1001):
+    for i in range(2001):
 
         
         #controller.randomize()
@@ -109,7 +109,7 @@ def test1(trial,k,n,train_flag,n_teams,save=1,params=None):
             if save:
                 controller.save("save/"+str(k)+"-"+str(n)+"-"+str(trial)+"-"+str(train_flag)+".pkl")
     return -max(R[-20:])
-    #train_flag=0 - D
+    #train_flag=0 - align w/ shape
     #train_flag=1 - alignment network
     #train_flag=2 - counterfactual-aprx
     #train_flag=3 - fitness critic
@@ -131,15 +131,14 @@ if __name__=="__main__":
         print(s.getvalue())
         
     else:
-        for train in [1]:
+        for train in [0,1,3,4,5]:
             procs=[]
-            k=5
-            n=4
-            for k in [4]:
+            for k in [4,6,8]:
                 n=k
                 teams=100
-                for i in range(1):
-                    p=mp.Process(target=test1,args=(i,k,n,train,teams))
+                params = [1e-3, 8, 16  ,10000]
+                for i in range(12):
+                    p=mp.Process(target=test1,args=(i,k,n,train,teams,1,params))
                     p.start()
                     time.sleep(0.05)
                     procs.append(p)
