@@ -59,7 +59,10 @@ class Net():
         x=torch.from_numpy(x.astype(np.float32))
         y=torch.from_numpy(y.astype(np.float32))
         pred=self.model(x)
-        loss=self.loss_fn(pred,y,shaping)
+        if shaping==False:
+            loss=self.loss_fn(pred,y)
+        else:
+            loss=self.loss_fn(pred,y,shaping)
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
