@@ -32,7 +32,7 @@ for num,VMAX in [[4,1.8],[6,2.4],[8,2.7]]:
     print(-np.min(g))
     
     idx=(-g).argsort()
-    idx=idx[-100:]
+    idx=idx[-1000:]
     x,g=x[idx,:],g[idx]
     print(x,-g)
 

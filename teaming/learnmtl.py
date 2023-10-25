@@ -236,7 +236,9 @@ class learner:
         self.log.save(fname)
         #print(self.Dapprox[0].model.state_dict()['4.bias'].is_cuda)
         netinfo={i:self.Dapprox[i].model.state_dict() for i in range(len(self.Dapprox))}
-        torch.save(netinfo,fname+".mdl")
+        torch.save(netinfo,fname+"f.mdl")
+        netinfo2={i:self.align[i].model.state_dict() for i in range(len(self.align))}
+        torch.save(netinfo2,fname+"a.mdl")
 
     #train_flag=0 - align w/shape
     #train_flag=1 - align
