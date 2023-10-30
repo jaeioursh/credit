@@ -131,7 +131,7 @@ if __name__=="__main__":
         print(s.getvalue())
         
     else:
-        for train in [0,1,3]:
+        for train in [6,7,8,9]:
             procs=[]
             for k in [4,6,8]:
                 n=k

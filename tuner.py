@@ -3,12 +3,12 @@ from skopt import gp_minimize
 import multiprocessing as mp
 import pickle as pkl
 
-test4=lambda x: sum([test1(0,4,4,1,100,save=0,params=x) for i in range(3)])
-test6=lambda x: sum([test1(0,6,6,1,100,save=0,params=x) for i in range(3)])
-test8=lambda x: sum([test1(0,8,8,1,100,save=0,params=x) for i in range(3)])
-test4a=lambda x: sum([test1(0,4,4,0,100,save=0,params=x) for i in range(3)])
-test6a=lambda x: sum([test1(0,6,6,0,100,save=0,params=x) for i in range(3)])
-test8a=lambda x: sum([test1(0,8,8,0,100,save=0,params=x) for i in range(3)])
+test4=lambda x: test1(0,4,4,1,100,save=0,params=x)
+test6=lambda x: test1(0,6,6,1,100,save=0,params=x)
+test8=lambda x: test1(0,8,8,1,100,save=0,params=x)
+test4a=lambda x:test1(0,4,4,0,100,save=0,params=x)
+test6a=lambda x:test1(0,6,6,0,100,save=0,params=x)
+test8a=lambda x:test1(0,8,8,0,100,save=0,params=x)
 
 def opt(test,num,typ,idx):
     C=[(0.0001, 0.001),(3.0,120.0),(4.0,64.0),(100.0,100000.0)]

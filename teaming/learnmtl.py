@@ -289,16 +289,19 @@ class learner:
                         z=[S[j][i],A[j][i],g]
                         #if d!=0:
                         self.hist[team[i]].append(z)
+                        if train_flag>5:
+                            self.histalign[team[i]].append(z)
                         #else:
                         #    self.zero[team[i]].append(z)
                         pols[i].S[-1].append(S[j][i])
-                    self.histalign[team[i]].append(z)
+                    if train_flag<2:
+                        self.histalign[team[i]].append(z)
                     pols[i].Z.append(S[-1][i])
                         
                 G.append(g)
             
 
-        if train_flag==1 or train_flag==0:
+        if train_flag==1 or train_flag==0 or train_flag>5:
             self.updateA(train_flag)
         if train_flag==2 or train_flag==3:
             self.updateD(env)
@@ -324,11 +327,15 @@ class learner:
                     #print(p.D)
                     p.fitness=np.sum(p.D)
                     
-                if train_flag==1 or train_flag==0:
-                    p.D=list(self.align[t].feed(np.array(p.Z)))
+                if train_flag==1 or train_flag==0 or train_flag>5:
+                    if train_flag>7:
+                        p.D=[np.max(i) for i in p.D]
+                        p.D=list(self.align[t].feed(np.array(p.Z)))
+                    else:
+                        p.D=[self.Dapprox[t].feed(np.array(p.S[i])) for i in range(len(p.S))]
 
                     p.fitness=np.sum(p.D)
-                    if train_flag==0:
+                    if train_flag==0 or train_flag==6 or train_flag==8:
                         p.fitness+=np.sum(p.G)
                 
                 if train_flag==2:
@@ -365,7 +372,7 @@ class learner:
                     D.append([samp[2]])
                 S,A,D=np.array(S),np.array(A),np.array(D)
                 Z=S#np.hstack((S,A))
-                if train_flag==0:
+                if train_flag==0 or train_flag==6 or train_flag==8:
                     self.align[i].train(Z,D,1)
                 else:
                     self.align[i].train(Z,D,0)

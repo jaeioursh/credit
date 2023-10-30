@@ -12,7 +12,7 @@ DEBUG=0
 
 #schedule = ["evo"+num,"base"+num,"EVO"+num]
 #schedule = ["base"+num+"_"+str(q) for q in [0.0,0.25,0.5,0.75,1.0]]
-AGENTS=8
+AGENTS=6
 ROBOTS=AGENTS
 vals=sorted([0.8,1.0,0.6,0.3,0.2,0.1],reverse=True)
 lbls={0:"Al w/ shaping",1:"Alignment",2:"Ctrfctl. Aprx.",3:"FitCritic",4:"$D$",5:"$G$"}
@@ -20,7 +20,7 @@ if DEBUG:
     plt.subplot(1,2,1)
 mint=1e9
 
-for q in [0,1,4,5]:#,3,4,5]:
+for q in [0,1,3,4,5]:#,3,4,5]:
     T=[]
     R=[]
     print(q)
