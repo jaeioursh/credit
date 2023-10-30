@@ -9,7 +9,7 @@ from sklearn.linear_model import LinearRegression
 scp -J cookjos@access.engr.oregonstate.edu cookjos@graf200-17.engr.oregonstate.edu:credit/save/* save/
 '''
 num=8
-
+typ=1
 #fig = plt.figure()
 specs=[
         [{"type": "scatter3d"}, {"type": "scatter3d"}, {"type": "scatter3d"}],
@@ -21,11 +21,14 @@ i=0
 for num,VMAX in [[4,1.8],[6,2.4],[8,2.7]]:
     i+=1
     x,g=[],[]
-    for idx in range(9):
-        with open("save/"+str(num)+"-"+str(idx)+".pkl","rb") as f:
-            X,G=pickle.load(f)
-            x.append(X)
-            g.append(G)
+    for idx in range(2):
+        try:
+            with open("save/b"+str(num)+"-"+str(idx)+"-"+str(typ)+".pkl","rb") as f:
+                X,G=pickle.load(f)
+        except:
+            pass
+        x.append(X)
+        g.append(G)
 
     x,g=np.vstack(x),np.hstack(g)
 
@@ -34,7 +37,7 @@ for num,VMAX in [[4,1.8],[6,2.4],[8,2.7]]:
     idx=(-g).argsort()
     idx=idx[-1000:]
     x,g=x[idx,:],g[idx]
-    print(x,-g)
+    print(x[-1],-g[-1])
 
     x=np.array(x)
     lr, hidden, batch, buffer = x.T
@@ -49,7 +52,7 @@ for num,VMAX in [[4,1.8],[6,2.4],[8,2.7]]:
         mode='markers',
         marker=dict(
             cmin=0.0,
-            cmax=VMAX,
+            cmax=VMAX*3.0,
             size=6,#np.sqrt(buffer/10),
             color=-g,                # set color to an array/list of desired values
             colorscale='Viridis',   # choose a colorscale

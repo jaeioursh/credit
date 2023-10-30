@@ -131,12 +131,12 @@ if __name__=="__main__":
         print(s.getvalue())
         
     else:
-        for train in [3]:
+        for train in [0,1,3]:
             procs=[]
             for k in [4,6,8]:
                 n=k
                 teams=100
-                params = [1e-3, 8, 16  ,10000]
+                params = [5e-4, 64, 16  ,100000]
                 for i in range(12):
                     p=mp.Process(target=test1,args=(i,k,n,train,teams,1,params))
                     p.start()
