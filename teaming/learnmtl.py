@@ -31,15 +31,26 @@ def comb(n, r):
 
 
 class Net():
-    def __init__(self,hidden=20*4,lr=5e-3,loss_fn=0):#*4
+    def __init__(self,hidden=20*4,lr=5e-3,loss_fn=0,opti=1,out_activate=1):#*4
         learning_rate=lr
-        self.model = torch.nn.Sequential(
-            torch.nn.Linear(8, hidden),
-            torch.nn.Tanh(),
-            torch.nn.Linear(hidden, hidden),
-            torch.nn.Tanh(),
-            torch.nn.Linear(hidden,1)
-        )
+        if out_activate:
+            self.model = torch.nn.Sequential(
+                torch.nn.Linear(8, hidden),
+                torch.nn.Tanh(),
+                torch.nn.Linear(hidden, hidden),
+                torch.nn.Tanh(),
+                torch.nn.Linear(hidden,1)
+            )
+        else:
+            self.model = torch.nn.Sequential(
+                torch.nn.Linear(8, hidden),
+                torch.nn.Tanh(),
+                torch.nn.Linear(hidden, hidden),
+                torch.nn.Tanh(),
+                torch.nn.Linear(hidden,1),
+                torch.nn.Sigmoid()
+            )
+            
         if loss_fn==0:
             self.loss_fn = torch.nn.MSELoss(reduction='sum')
         else:
@@ -47,8 +58,10 @@ class Net():
 
         self.sig = torch.nn.Sigmoid()
 
-        self.optimizer = torch.optim.RMSprop(self.model.parameters(), lr=learning_rate)
-        #self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
+        if opti:
+            self.optimizer = torch.optim.RMSprop(self.model.parameters(), lr=learning_rate)
+        else:
+            self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
     def feed(self,x):
         x=torch.from_numpy(x.astype(np.float32))
         pred=self.model(x)
@@ -105,8 +118,8 @@ def robust_sample(data,n):
 
 class learner:
     def __init__(self,nagents,types,sim,params):
-        self.lr, self.hidden, self.batch, self.replay_size= params
-        self.hidden,self.batch,self.replay_size=[int (q) for q in [self.hidden,self.batch,self.replay_size]]
+        self.lr, self.hidden, self.batch, self.replay_size,opti,acti= params
+        self.hidden,self.batch,self.replay_size,opti,acti,=[int (q) for q in [self.hidden,self.batch,self.replay_size,opti,acti]]
 
         self.log=logger()
         self.nagents=nagents
@@ -116,7 +129,7 @@ class learner:
         self.team=[]
         self.index=[]
         self.Dapprox=[Net() for i in range(self.types)]
-        self.align=[Net(self.hidden,self.lr,1) for i in range(self.types)]
+        self.align=[Net(self.hidden,self.lr,1,opti,acti) for i in range(self.types)]
 
         self.every_team=self.many_teams()
         self.test_teams=self.every_team

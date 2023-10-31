@@ -15,12 +15,12 @@ DEBUG=0
 AGENTS=6
 ROBOTS=AGENTS
 vals=sorted([0.8,1.0,0.6,0.3,0.2,0.1],reverse=True)
-lbls={0:"Al w/ shaping",1:"Alignment",2:"Ctrfctl. Aprx.",3:"FitCritic",4:"$D$",5:"$G$"}
+lbls={0:"Al w/ shaping",1:"Alignment",2:"Ctrfctl. Aprx.",3:"FitCritic",4:"$D$",5:"$G$",6:"al shape traj",7:"al traj",8:"al shape traj max",9:"al traj max"}
 if DEBUG:
     plt.subplot(1,2,1)
 mint=1e9
 
-for q in [0,1,3,4,5]:#,3,4,5]:
+for q in [0,1,3,4,5]:#,6,7,8,9]:#,3,4,5]:
     T=[]
     R=[]
     print(q)
