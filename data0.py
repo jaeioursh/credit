@@ -23,7 +23,7 @@ for num,VMAX in [[4,1.8],[6,2.4],[8,2.7]]:
     x,g=[],[]
     for idx in range(2):
         try:
-            with open("save/b"+str(num)+"-"+str(idx)+"-"+str(typ)+".pkl","rb") as f:
+            with open("save/c"+str(num)+"-"+str(idx)+"-"+str(typ)+".pkl","rb") as f:
                 X,G=pickle.load(f)
         except:
             pass
@@ -40,7 +40,7 @@ for num,VMAX in [[4,1.8],[6,2.4],[8,2.7]]:
     print(x[-1],-g[-1])
 
     x=np.array(x)
-    lr, hidden, batch, buffer = x.T
+    lr, hidden, batch, buffer,opti,acti = x.T
 
     params = [1e-3, 8, 16  ,10000]
     barloc=[1/3.0,2.0/3.0,1]
@@ -52,7 +52,7 @@ for num,VMAX in [[4,1.8],[6,2.4],[8,2.7]]:
         mode='markers',
         marker=dict(
             cmin=0.0,
-            cmax=VMAX*3.0,
+            cmax=VMAX*1.0,
             size=6,#np.sqrt(buffer/10),
             color=-g,                # set color to an array/list of desired values
             colorscale='Viridis',   # choose a colorscale

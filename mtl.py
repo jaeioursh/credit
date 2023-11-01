@@ -17,6 +17,7 @@ from teaming.learnmtl import learner
 from sys import argv
 import pickle
 #import tensorflow as tf
+import time
 
 def rand_loc(n):
     x,y=np.random.random(2)
@@ -72,7 +73,22 @@ def make_env(nagents,rand=0):
     return sim
 
 
-import time
+def round_env(nagents,rand=0):
+    vals =np.array([1.0]*nagents)
+    t=np.linspace(0,2*np.pi,nagents,endpoint=False)
+    pos = np.array([np.sin(t),np.cos(t)]).T
+    pos=20*pos+15
+
+    sim = RoverDomainGym(nagents,30,pos,vals)
+ 
+    sim.data["Coupling"]=1
+    sim.data['Number of Agents']=nagents
+    sim.data["Minimum Distance"]=1.2
+    sim.data["Observation Radius"]=20.0
+    obs=sim.reset()
+    return sim
+
+
 
 def test1(trial,k,n,train_flag,n_teams,save=1,params=None):
     #print(np.random.get_state())[1]    
@@ -109,6 +125,36 @@ def test1(trial,k,n,train_flag,n_teams,save=1,params=None):
             if save:
                 controller.save("save/"+str(k)+"-"+str(n)+"-"+str(trial)+"-"+str(train_flag)+".pkl")
     return -max(R[-20:])
+
+
+
+
+def test2(trial,k,n,train_flag,n_teams,save=1,params=None):
+    #print(np.random.get_state())[1]    
+    np.random.seed(int(time.time()*100000)%100000)
+    env=round_env(n)
+    if params is None:
+        params=[5e-3, 80, 32,1000]
+    OBS=env.reset()
+    controller = learner(n,k,env,params)
+    #controller.set_teams(n_teams)
+    R=[]
+    for i in range(1201):
+        if i%100000==0:
+            controller.set_teams(n_teams)
+
+        controller.test(env)
+
+        r=controller.run(env,train_flag)
+        if save:
+            print(i,r,len(controller.team),train_flag)
+        R.append(r)
+            
+        if i%50==0:
+            if save:
+                controller.save("save/r"+str(k)+"-"+str(n)+"-"+str(trial)+"-"+str(train_flag)+".pkl")
+    return -max(R[-20:])
+
     #train_flag=0 - align w/ shape
     #train_flag=1 - alignment network
     #train_flag=2 - counterfactual-aprx
@@ -135,14 +181,14 @@ if __name__=="__main__":
         print(s.getvalue())
         
     else:
-        for train in [6,7,8,9]:
+        for train in [0,1,3,4,5,6,7,8,9]:
             procs=[]
-            for k in [4,6,8]:
+            for k in [5,10,20]:
                 n=k
                 teams=100
-                params = [5e-4, 64, 16  ,100000]
+                params = [5e-4, 64, 16  ,100000,0,0]
                 for i in range(12):
-                    p=mp.Process(target=test1,args=(i,k,n,train,teams,1,params))
+                    p=mp.Process(target=test2,args=(i,k,n,train,teams,1,params))
                     p.start()
                     time.sleep(0.05)
                     procs.append(p)

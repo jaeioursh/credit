@@ -10,8 +10,8 @@ import pickle
 from teaming import logger
 from teaming.learnmtl import Net
 
-
-q,i,AGENTS=[[0,4,6],[0,1,8],[0,1,4]][2]
+idx=0
+q,i,AGENTS=[[0,4,6],[0,1,8],[0,1,4]][idx]
 GEN=0
 RESOLUTION,SAMPLES=100,50
 
@@ -30,7 +30,7 @@ teams=np.array(log.pull("types")[0])
 INDEX=1
 
 
-net=[Net(8,1,1) for i in range(AGENTS)]
+net=[Net(64,1,1) for i in range(AGENTS)]
 for i in range(AGENTS):
     net[i].model.load_state_dict(torch.load(fname+"a.mdl")[i])
 
@@ -97,7 +97,7 @@ if GEN:
     with open("save/test"+str(AGENTS)+".data", 'wb') as f:
         pickle.dump(data, f)
 else:   
-    with open("save/test"+str(AGENTS)+".data", 'wb') as f:
+    with open("save/test"+str(AGENTS)+".data", 'rb') as f:
         data=pickle.load(f)
 
 for i in range(len(As)):

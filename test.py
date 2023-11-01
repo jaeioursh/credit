@@ -55,13 +55,24 @@ class Net():
         loss = -torch.mean(align)
         return loss
     
-net=Net()
-x=np.array([[0,0],[1,0],[0,1],[1,1]])
-y=np.array([[0],[1],[1],[0]])
+if __name__ == "__main__":
+    if 0:
+        net=Net()
+        x=np.array([[0,0],[1,0],[0,1],[1,1]])
+        y=np.array([[0],[1],[1],[0]])
 
-x=np.vstack([x for _ in range (1)])
-y=np.vstack([y for _ in range (1)])
-print(x.shape,y.shape)
-for i in range(1000):
-    print(i,net.train(x,y))
-print(net.feed(x))
+        x=np.vstack([x for _ in range (1)])
+        y=np.vstack([y for _ in range (1)])
+        print(x.shape,y.shape)
+        for i in range(1000):
+            print(i,net.train(x,y))
+        print(net.feed(x))
+    else:
+        nagents=4
+        t=np.linspace(0,2*np.pi,nagents,endpoint=False)
+        pos = np.array([np.sin(t),np.cos(t)]).T
+        pos=20*pos+15
+        print(pos)
+        plt.plot(pos[:,0],pos[:,1],"o")
+        plt.show()
+        
