@@ -34,7 +34,7 @@ class RoverDomainGym(SimulationCore):
         SimulationCore.__init__(self)
 
         self.data["Number of Agents"] = nagent
-        self.data["Number of POIs"] = 6
+        self.data["Number of POIs"] = len(Vals)
         
         self.data["Steps"] = nsteps
         self.data["Trains per Episode"] = 100

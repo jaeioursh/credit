@@ -112,6 +112,7 @@ def assignDifferenceReward(data):
             if closestObsDistanceSqr < minDistanceSqr:
                 closestObsDistanceSqr = minDistanceSqr
             scale = (observationRadiusSqr-closestObsDistanceSqr) / (observationRadiusSqr - minDistanceSqr)
+            #print("scale",scale,poiValueCol[poiIndex],poiIndex )
             globalReward += poiValueCol[poiIndex] *scale
 
     
@@ -152,7 +153,7 @@ def assignDifferenceReward(data):
         
     data["Agent Rewards"] = npDifferenceRewardCol  
     data["Global Reward"] = globalReward
-    
+    #print(globalReward)
 
  
 @cython.boundscheck(False)  # Deactivate bounds checking

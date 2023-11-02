@@ -76,9 +76,10 @@ def make_env(nagents,rand=0):
 def round_env(nagents,rand=0):
     vals =np.array([1.0]*nagents)
     t=np.linspace(0,2*np.pi,nagents,endpoint=False)
-    pos = np.array([np.sin(t),np.cos(t)]).T
-    pos=20*pos+15
-
+    
+    pos = np.array([np.cos(t),np.sin(t)]).T
+    pos=0.75*pos+0.5
+    #print(pos)
     sim = RoverDomainGym(nagents,30,pos,vals)
  
     sim.data["Coupling"]=1

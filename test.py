@@ -67,7 +67,7 @@ if __name__ == "__main__":
         for i in range(1000):
             print(i,net.train(x,y))
         print(net.feed(x))
-    else:
+    if 0:
         nagents=4
         t=np.linspace(0,2*np.pi,nagents,endpoint=False)
         pos = np.array([np.sin(t),np.cos(t)]).T
@@ -75,4 +75,30 @@ if __name__ == "__main__":
         print(pos)
         plt.plot(pos[:,0],pos[:,1],"o")
         plt.show()
+    if 1:
+        from mtl import round_env
         
+        T=np.linspace(0,50,1000)
+        G=[]
+        i=0
+        for t in T:
+            i+=1
+            #t=0.0
+            env=round_env(1)
+            #print(env.data["Agent Positions"])
+            env.data["Agent Positions"]=np.array([[t,15.0]])
+            #print(env.data["Agent Positions"])
+            env.data["Agent Position History"]=np.array([env.data["Agent Positions"]])
+            env.data["Steps"]=0
+            env.data["Observation Function"](env.data)
+            z=env.data["Agent Observations"]
+    
+            
+            env.data["Reward Function"](env.data)
+            g=env.data["Global Reward"]
+            if g>1e3 or g<-1e3:
+                print("err")
+                print(i,g)
+            G.append(g)
+        plt.plot(T,G)
+        plt.show()
