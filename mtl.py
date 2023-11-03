@@ -78,7 +78,7 @@ def round_env(nagents,rand=0):
     t=np.linspace(0,2*np.pi,nagents,endpoint=False)
     
     pos = np.array([np.cos(t),np.sin(t)]).T
-    pos=0.75*pos+0.5
+    pos=0.9*pos+0.5
     #print(pos)
     sim = RoverDomainGym(nagents,30,pos,vals)
  
@@ -184,7 +184,7 @@ if __name__=="__main__":
     else:
         for train in [0,1,3,4,5,6,7,8,9]:
             procs=[]
-            for k in [5,10,20]:
+            for k in [50,100]:
                 n=k
                 teams=100
                 params = [5e-4, 64, 16  ,100000,0,0]
