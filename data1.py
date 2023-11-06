@@ -12,15 +12,16 @@ DEBUG=0
 
 #schedule = ["evo"+num,"base"+num,"EVO"+num]
 #schedule = ["base"+num+"_"+str(q) for q in [0.0,0.25,0.5,0.75,1.0]]
-AGENTS=10
+AGENTS=8
+TYP=""
 ROBOTS=AGENTS
 vals=sorted([0.8,1.0,0.6,0.3,0.2,0.1],reverse=True)
-lbls={0:"Al w/ shaping",1:"Alignment",2:"Ctrfctl. Aprx.",3:"FitCritic",4:"$D$",5:"$G$",6:"al shape traj",7:"al traj",8:"al shape traj max",9:"al traj max"}
+lbls={0:"Al w/ shaping",1:"Alignment",2:"Ctrfctl. Aprx.",3:"FitCritic",4:"$D$",5:"$G$",6:"Al shape traj",7:"Al traj",8:"Al shape traj max",9:"Al traj max"}
 if DEBUG:
     plt.subplot(1,2,1)
 mint=1e9
 
-for q in [0,1,3,4,5,6,7,8,9]:
+for q in [1,3,4,5,7,9]:
     T=[]
     R=[]
     print(q)
@@ -30,9 +31,11 @@ for q in [0,1,3,4,5,6,7,8,9]:
         log = logger.logger()
         
         try:
-            log.load("save/r"+str(AGENTS)+"-"+str(ROBOTS)+"-"+str(i)+"-"+str(q)+".pkl")
+            log.load("save/"+TYP+str(AGENTS)+"-"+str(ROBOTS)+"-"+str(i)+"-"+str(q)+".pkl")
         except:
-            continue
+            print("err")
+            print("save/"+TYP+str(AGENTS)+"-"+str(ROBOTS)+"-"+str(i)+"-"+str(q)+".pkl")
+           
     
         r=log.pull("reward")
         #L=log.pull("loss")
@@ -58,19 +61,19 @@ for q in [0,1,3,4,5,6,7,8,9]:
     if DEBUG:
         plt.subplot(1,2,2)
 
-    print("broken1")
+    
     print(T,mint)
     T=[t[:mint] for t in T]
-    print("broken2")
+    
     print(T)
     std=np.std(T,axis=0)/np.sqrt(12)
     Tm=np.mean(T,axis=0)
-    print("broken3")
+    
     print(T,std,Tm)
     X=[i*1 for i in range(len(Tm))]
 
     plt.plot(X,Tm,label=lbls[q])
-    #plt.fill_between(X,Tm-std,Tm+std,alpha=0.35, label='_nolegend_')
+    plt.fill_between(X,Tm-std,Tm+std,alpha=0.35, label='_nolegend_')
 
     #plt.ylim([0,1.15])
     plt.grid(True)
@@ -78,7 +81,7 @@ plt.legend([str(i) for i in range(8)])
 max_val=sum(vals[:ROBOTS//2])*n_teams
 
 plt.xlabel("Generation")
-plt.title("Performance of " + str(AGENTS)+" Agents, Teams of "+str(ROBOTS))
+plt.title("Performance of " + str(AGENTS)+" Agents")
 leg=plt.legend()
 for legobj in leg.legendHandles:
     legobj.set_linewidth(4.0)

@@ -11,7 +11,8 @@ from teaming import logger
 from teaming.learnmtl import Net
 
 idx=0
-q,i,AGENTS=[[0,4,6],[0,1,8],[0,1,4]][idx]
+q,i,AGENTS=[[1,6,6],[9,7,6],[1,11,8],[9,8,8]][idx]
+Q=q
 GEN=0
 RESOLUTION,SAMPLES=100,50
 
@@ -94,10 +95,10 @@ if GEN:
         print(i)
         zz=eval2(RESOLUTION,SAMPLES,As[i])
         data.append(zz)
-    with open("save/test"+str(AGENTS)+".data", 'wb') as f:
+    with open("save/test"+str(AGENTS)+str(Q)+".data", 'wb') as f:
         pickle.dump(data, f)
 else:   
-    with open("save/test"+str(AGENTS)+".data", 'rb') as f:
+    with open("save/test"+str(AGENTS)+str(Q)+".data", 'rb') as f:
         data=pickle.load(f)
 
 for i in range(len(As)):

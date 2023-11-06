@@ -162,10 +162,10 @@ def test2(trial,k,n,train_flag,n_teams,save=1,params=None):
     #train_flag=3 - fitness critic
     #train_flag=4 - D*
     #train_flag=5 - G*
-    #train_flag=0 - a shape train traj
-    #train_flag=1 - align train traj
-    #train_flag=0 - a shape train traj max
-    #train_flag=1 - align train traj max
+    #train_flag=6 - a shape train traj
+    #train_flag=7 - align train traj
+    #train_flag=8 - a shape train traj max
+    #train_flag=9 - align train traj max
 if __name__=="__main__":
     if 0:
         import cProfile, pstats, io
@@ -182,14 +182,14 @@ if __name__=="__main__":
         print(s.getvalue())
         
     else:
-        for train in [0,1,3,4,5,6,7,8,9]:
+        for train in [1,7,9]:
             procs=[]
-            for k in [50,100]:
+            for k in [4,6,8]:
                 n=k
                 teams=100
-                params = [5e-4, 64, 16  ,100000,0,0]
-                for i in range(12):
-                    p=mp.Process(target=test2,args=(i,k,n,train,teams,1,params))
+                params = [5e-4, 64, 16  ,10000,0,0]
+                for i in range(2):
+                    p=mp.Process(target=test1,args=(i,k,n,train,teams,1,params))
                     p.start()
                     time.sleep(0.05)
                     procs.append(p)

@@ -9,7 +9,7 @@ from sklearn.linear_model import LinearRegression
 scp -J cookjos@access.engr.oregonstate.edu cookjos@graf200-17.engr.oregonstate.edu:credit/save/* save/
 '''
 num=8
-typ=1
+typ=0
 #fig = plt.figure()
 specs=[
         [{"type": "scatter3d"}, {"type": "scatter3d"}, {"type": "scatter3d"}],

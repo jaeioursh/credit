@@ -341,11 +341,12 @@ class learner:
                     p.fitness=np.sum(p.D)
                     
                 if train_flag==1 or train_flag==0 or train_flag>5:
-                    if train_flag>7:
-                        p.D=[np.max(i) for i in p.D]
+                    if train_flag==1 or train_flag==7:
                         p.D=list(self.align[t].feed(np.array(p.Z)))
                     else:
-                        p.D=[self.Dapprox[t].feed(np.array(p.S[i])) for i in range(len(p.S))]
+                        p.D=[self.align[t].feed(np.array(p.S[i])) for i in range(len(p.S))]
+                        p.D=[np.max(i) for i in p.D]
+                    
 
                     p.fitness=np.sum(p.D)
                     if train_flag==0 or train_flag==6 or train_flag==8:
