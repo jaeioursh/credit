@@ -188,7 +188,7 @@ if __name__=="__main__":
                 n=k
                 teams=100
                 params = [5e-4, 64, 16  ,10000,0,0]
-                for i in range(2):
+                for i in range(12):
                     p=mp.Process(target=test1,args=(i,k,n,train,teams,1,params))
                     p.start()
                     time.sleep(0.05)
