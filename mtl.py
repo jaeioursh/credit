@@ -102,7 +102,7 @@ def test1(trial,k,n,train_flag,n_teams,save=1,params=None):
     controller = learner(n,k,env,params)
     #controller.set_teams(n_teams)
     R=[]
-    for i in range(2001):
+    for i in range(1001):
 
         
         #controller.randomize()
