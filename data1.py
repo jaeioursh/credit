@@ -21,7 +21,7 @@ if DEBUG:
     plt.subplot(1,2,1)
 mint=1e9
 
-for q in [1,3,4,5,7,9]:
+for q in [1,3,4,5,7]:
     T=[]
     R=[]
     print(q)

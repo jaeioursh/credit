@@ -11,7 +11,7 @@ from teaming import logger
 from teaming.learnmtl import Net
 
 idx=0
-q,i,AGENTS=[[1,6,6],[9,7,6],[1,11,8],[9,8,8]][idx]
+q,i,AGENTS=[][idx]
 Q=q
 GEN=0
 RESOLUTION,SAMPLES=100,50
