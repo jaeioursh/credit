@@ -9,7 +9,7 @@ from sklearn.linear_model import LinearRegression
 scp -J cookjos@access.engr.oregonstate.edu cookjos@graf200-17.engr.oregonstate.edu:credit/save/* save/
 '''
 num=8
-typ=0
+typ=1
 #fig = plt.figure()
 specs=[
         [{"type": "scatter3d"}, {"type": "scatter3d"}, {"type": "scatter3d"}],
@@ -21,7 +21,7 @@ i=0
 for num,VMAX in [[4,1.8],[6,2.4],[8,2.7]]:
     i+=1
     x,g=[],[]
-    for idx in range(2):
+    for idx in range(4):
         try:
             with open("save/c"+str(num)+"-"+str(idx)+"-"+str(typ)+".pkl","rb") as f:
                 X,G=pickle.load(f)
@@ -37,12 +37,15 @@ for num,VMAX in [[4,1.8],[6,2.4],[8,2.7]]:
     idx=(-g).argsort()
     idx=idx[-1000:]
     x,g=x[idx,:],g[idx]
-    print(x[-1],-g[-1])
+    for qq in range(1,6):
+        for xx in x[-qq]:
+            print(np.round(xx,6),sep=", ",end=" ")
+        print(-g[-qq])
 
     x=np.array(x)
     lr, hidden, batch, buffer,opti,acti = x.T
 
-    params = [1e-3, 8, 16  ,10000]
+    params = [5e-4, 80, 24  ,10000,0,1]
     barloc=[1/3.0,2.0/3.0,1]
     
     fig.add_trace(go.Scatter3d(
