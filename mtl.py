@@ -78,14 +78,14 @@ def round_env(nagents,rand=0):
     t=np.linspace(0,2*np.pi,nagents,endpoint=False)
     
     pos = np.array([np.cos(t),np.sin(t)]).T
-    pos=0.9*pos+0.5
+    pos=pos+0.5
     #print(pos)
     sim = RoverDomainGym(nagents,30,pos,vals)
  
     sim.data["Coupling"]=1
     sim.data['Number of Agents']=nagents
     sim.data["Minimum Distance"]=1.2
-    sim.data["Observation Radius"]=20.0
+    sim.data["Observation Radius"]=5.0
     obs=sim.reset()
     return sim
 
@@ -140,7 +140,7 @@ def test2(trial,k,n,train_flag,n_teams,save=1,params=None):
     controller = learner(n,k,env,params)
     #controller.set_teams(n_teams)
     R=[]
-    for i in range(1201):
+    for i in range(1501):
         if i%100000==0:
             controller.set_teams(n_teams)
 
@@ -182,14 +182,14 @@ if __name__=="__main__":
         print(s.getvalue())
         
     else:
-        for train in [1,7,9]:
+        for k in [5,10,20,50]:
             procs=[]
-            for k in [4,6,8]:
+            for train in [1,3,4,5,7,9]:
                 n=k
                 teams=100
                 params = [5e-4, 80, 24  ,30000,0,1]
                 for i in range(12):
-                    p=mp.Process(target=test1,args=(i,k,n,train,teams,1,params))
+                    p=mp.Process(target=test2,args=(i,k,n,train,teams,1,params))
                     p.start()
                     time.sleep(0.05)
                     procs.append(p)

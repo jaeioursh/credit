@@ -12,7 +12,7 @@ DEBUG=0
 
 #schedule = ["evo"+num,"base"+num,"EVO"+num]
 #schedule = ["base"+num+"_"+str(q) for q in [0.0,0.25,0.5,0.75,1.0]]
-AGENTS=8
+AGENTS=6
 TYP=""
 ROBOTS=AGENTS
 vals=sorted([0.8,1.0,0.6,0.3,0.2,0.1],reverse=True)
