@@ -41,16 +41,10 @@ class Net():
         self.optimizer.step()
         return loss.detach().item()
     
-    def alignment_loss(self,o, t):
-        o=o+t
-        ot=torch.transpose(o,0,1)
-        tt=torch.transpose(t,0,1)
-
-        O=o-ot
-        T=t-tt
-
-        align = torch.mul(O,T)
-        #print(align)
+    def alignment_loss(self,g, G):
+        gt=torch.transpose(g,0,1)
+        Gt=torch.transpose(G,0,1)
+        align = torch.mul(g-gt,G-Gt)
         align = self.sig(align)
         loss = -torch.mean(align)
         return loss

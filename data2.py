@@ -10,10 +10,10 @@ import pickle
 from teaming import logger
 from teaming.learnmtl import Net
 
-idx=0
-q,i,AGENTS=[][idx]
+idx=2
+q,i,AGENTS=[[1,10,4],[1,2,6],[1,3,8]][idx]
 Q=q
-GEN=0
+GEN=1
 RESOLUTION,SAMPLES=100,50
 
 ROBOTS=AGENTS
@@ -31,7 +31,7 @@ teams=np.array(log.pull("types")[0])
 INDEX=1
 
 
-net=[Net(64,1,1) for i in range(AGENTS)]
+net=[Net(80,1,1) for i in range(AGENTS)]
 for i in range(AGENTS):
     net[i].model.load_state_dict(torch.load(fname+"a.mdl")[i])
 
@@ -40,7 +40,7 @@ def eval(x,y,t,q):
     
     test=pos[-1][0].copy()
 
-    test[i]=[x,y]
+    test[q]=[x,y]
 
     env.data["Agent Orientations"][q,:]=[np.sin(t),np.cos(t)]
     env.data["Agent Positions"]=test
@@ -53,14 +53,14 @@ def eval(x,y,t,q):
     #reward.assignGlobalReward(env.data)
     #reward.assignDifferenceReward(env.data)
     
-    #env.data["Reward Function"](env.data)
-    #g=env.data["Global Reward"]
-    g=0.0
+    env.data["Reward Function"](env.data)
+    g=env.data["Global Reward"]
+    #g=0.0
     r=0.0
     #r=net[q].feed(s)[0]
 
     #print(env.data["Agent Orientations"])
-    return s
+    return s,g
 
 def eval2(steps,N,q):
     x=np.linspace(-5,35,steps)
@@ -70,7 +70,7 @@ def eval2(steps,N,q):
         for i in range(steps):
             for k in range(N):
                 t=np.random.random()*2*np.pi
-                s=eval(x[i],y[j],t,q)
+                s=eval(x[i],y[j],t,q)[0]
                 S.append(s)
     print("network")
     S=np.array(S)

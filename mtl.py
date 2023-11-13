@@ -99,7 +99,7 @@ def test1(trial,k,n,train_flag,n_teams,save=1,params=None):
         params=[5e-3, 80, 32,1000]
     OBS=env.reset()
 
-    controller = learner(n,k,env,params)
+    controller = learner(n,k,env,train_flag,params)
     #controller.set_teams(n_teams)
     R=[]
     for i in range(2001):
@@ -137,7 +137,7 @@ def test2(trial,k,n,train_flag,n_teams,save=1,params=None):
     if params is None:
         params=[5e-3, 80, 32,1000]
     OBS=env.reset()
-    controller = learner(n,k,env,params)
+    controller = learner(n,k,env,train_flag,params)
     #controller.set_teams(n_teams)
     R=[]
     for i in range(1501):
@@ -182,14 +182,14 @@ if __name__=="__main__":
         print(s.getvalue())
         
     else:
-        for k in [5,10,20,50]:
+        for k in [4,6,8]:
             procs=[]
-            for train in [1,3,4,5,7,9]:
+            for train in [0,6,8]:
                 n=k
                 teams=100
                 params = [5e-4, 80, 24  ,30000,0,1]
                 for i in range(12):
-                    p=mp.Process(target=test2,args=(i,k,n,train,teams,1,params))
+                    p=mp.Process(target=test1,args=(i,k,n,train,teams,1,params))
                     p.start()
                     time.sleep(0.05)
                     procs.append(p)

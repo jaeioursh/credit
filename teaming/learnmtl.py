@@ -53,8 +53,10 @@ class Net():
             
         if loss_fn==0:
             self.loss_fn = torch.nn.MSELoss(reduction='sum')
-        else:
+        elif loss_fn==1:
             self.loss_fn = self.alignment_loss
+        elif loss_fn ==2:
+            self.loss_fn = lambda x,y: self.alignment_loss(x,y) + torch.nn.MSELoss(reduction='sum')(x,y)
 
         self.sig = torch.nn.Sigmoid()
 
@@ -72,10 +74,8 @@ class Net():
         x=torch.from_numpy(x.astype(np.float32))
         y=torch.from_numpy(y.astype(np.float32))
         pred=self.model(x)
-        if shaping==False:
-            loss=self.loss_fn(pred,y)
-        else:
-            loss=self.loss_fn(pred,y,shaping)
+        
+        loss=self.loss_fn(pred,y)
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
@@ -117,7 +117,7 @@ def robust_sample(data,n):
     return smpl
 
 class learner:
-    def __init__(self,nagents,types,sim,params):
+    def __init__(self,nagents,types,sim,train_flag,params):
         self.lr, self.hidden, self.batch, self.replay_size,opti,acti= params
         self.hidden,self.batch,self.replay_size,opti,acti,=[int (q) for q in [self.hidden,self.batch,self.replay_size,opti,acti]]
 
@@ -129,7 +129,12 @@ class learner:
         self.team=[]
         self.index=[]
         self.Dapprox=[Net() for i in range(self.types)]
-        self.align=[Net(self.hidden,self.lr,1,opti,acti) for i in range(self.types)]
+        flg=0
+        if train_flag==0 or train_flag==6 or train_flag==8:
+            flg=2
+        else:
+            flg=1
+        self.align=[Net(self.hidden,self.lr,flg,opti,acti) for i in range(self.types)]
 
         self.every_team=self.many_teams()
         self.test_teams=self.every_team
@@ -341,7 +346,7 @@ class learner:
                     p.fitness=np.sum(p.D)
                     
                 if train_flag==1 or train_flag==0 or train_flag>5:
-                    if train_flag==1 or train_flag==7:
+                    if train_flag==1 or train_flag==7 or train_flag==0 or train_flag==6:
                         p.D=list(self.align[t].feed(np.array(p.Z)))
                     else:
                         p.D=[self.align[t].feed(np.array(p.S[i])) for i in range(len(p.S))]
@@ -386,10 +391,8 @@ class learner:
                     D.append([samp[2]])
                 S,A,D=np.array(S),np.array(A),np.array(D)
                 Z=S#np.hstack((S,A))
-                if train_flag==0 or train_flag==6 or train_flag==8:
-                    self.align[i].train(Z,D,1)
-                else:
-                    self.align[i].train(Z,D,0)
+                
+                self.align[i].train(Z,D,0)
 
     def updateD(self,env):
         
