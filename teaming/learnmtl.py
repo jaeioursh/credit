@@ -132,8 +132,11 @@ class learner:
         flg=0
         if train_flag==0 or train_flag==6 or train_flag==8:
             flg=2
+        elif train_flag==2:
+            flg=0
         else:
             flg=1
+        
         self.align=[Net(self.hidden,self.lr,flg,opti,acti) for i in range(self.types)]
 
         self.every_team=self.many_teams()
@@ -312,16 +315,16 @@ class learner:
                         #else:
                         #    self.zero[team[i]].append(z)
                         pols[i].S[-1].append(S[j][i])
-                    if train_flag<2:
+                    if train_flag<=2:
                         self.histalign[team[i]].append(z)
                     pols[i].Z.append(S[-1][i])
                         
                 G.append(g)
             
 
-        if train_flag==1 or train_flag==0 or train_flag>5:
+        if train_flag==2 or train_flag==1 or train_flag==0 or train_flag>5:
             self.updateA(train_flag)
-        if train_flag==2 or train_flag==3:
+        if train_flag==3:
             self.updateD(env)
         train_set=np.unique(np.array(self.team))
         for t in np.unique(np.array(self.team)):
@@ -346,7 +349,7 @@ class learner:
                     p.fitness=np.sum(p.D)
                     
                 if train_flag==1 or train_flag==0 or train_flag>5:
-                    if train_flag==1 or train_flag==7 or train_flag==0 or train_flag==6:
+                    if train_flag==1 or train_flag==7 or train_flag==0 or train_flag==6  or train_flag==2:
                         p.D=list(self.align[t].feed(np.array(p.Z)))
                     else:
                         p.D=[self.align[t].feed(np.array(p.S[i])) for i in range(len(p.S))]
@@ -357,10 +360,7 @@ class learner:
                     if train_flag==0 or train_flag==6 or train_flag==8:
                         p.fitness+=np.sum(p.G)
                 
-                if train_flag==2:
-                    #self.approx(p,t,S_sample)
-                    p.D=list(self.Dapprox[t].feed(np.array(p.Z)))
-                    #p.fitness=np.sum(p.D)
+                
                     
                     p.fitness=np.sum(p.G)-np.sum(p.D)
                         

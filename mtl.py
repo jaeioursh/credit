@@ -158,7 +158,7 @@ def test2(trial,k,n,train_flag,n_teams,save=1,params=None):
 
     #train_flag=0 - align w/ shape
     #train_flag=1 - alignment network
-    #train_flag=2 - counterfactual-aprx
+    #train_flag=2 - g_hat
     #train_flag=3 - fitness critic
     #train_flag=4 - D*
     #train_flag=5 - G*
@@ -184,7 +184,7 @@ if __name__=="__main__":
     else:
         for k in [4,6,8]:
             procs=[]
-            for train in [0,6,8]:
+            for train in [2]:
                 n=k
                 teams=100
                 params = [5e-4, 80, 24  ,30000,0,1]
