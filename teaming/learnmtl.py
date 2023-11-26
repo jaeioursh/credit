@@ -348,7 +348,7 @@ class learner:
                     #print(p.D)
                     p.fitness=np.sum(p.D)
                     
-                if train_flag==1 or train_flag==0 or train_flag>5:
+                if train_flag==1 or train_flag==0 or train_flag>5 or train_flag==2:
                     if train_flag==1 or train_flag==7 or train_flag==0 or train_flag==6  or train_flag==2:
                         p.D=list(self.align[t].feed(np.array(p.Z)))
                     else:
