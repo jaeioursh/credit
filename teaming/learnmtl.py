@@ -362,7 +362,7 @@ class learner:
                 
                 
                     
-                    p.fitness=np.sum(p.G)-np.sum(p.D)
+                        #p.fitness=np.sum(p.G)-np.sum(p.D)
                         
                     #print(p.fitness)
 
