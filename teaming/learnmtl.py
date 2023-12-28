@@ -33,23 +33,17 @@ def comb(n, r):
 class Net():
     def __init__(self,hidden=20*4,lr=5e-3,loss_fn=0,opti=1,out_activate=1):#*4
         learning_rate=lr
-        if out_activate:
-            self.model = torch.nn.Sequential(
-                torch.nn.Linear(8, hidden),
-                torch.nn.Tanh(),
-                torch.nn.Linear(hidden, hidden),
-                torch.nn.Tanh(),
-                torch.nn.Linear(hidden,1)
-            )
-        else:
-            self.model = torch.nn.Sequential(
-                torch.nn.Linear(8, hidden),
-                torch.nn.Tanh(),
-                torch.nn.Linear(hidden, hidden),
-                torch.nn.Tanh(),
-                torch.nn.Linear(hidden,1),
-                torch.nn.Sigmoid()
-            )
+        
+
+        
+        self.model = torch.nn.Sequential(
+            torch.nn.Linear(8, hidden),
+            torch.nn.Tanh(),
+            torch.nn.Linear(hidden, hidden),
+            torch.nn.Tanh(),
+            torch.nn.Linear(hidden,1)
+        )
+        
             
         if loss_fn==0:
             self.loss_fn = torch.nn.MSELoss(reduction='sum')

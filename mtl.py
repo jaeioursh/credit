@@ -184,7 +184,7 @@ if __name__=="__main__":
     else:
         for k in [4,6,8]:
             procs=[]
-            for train in [2]:
+            for train in [6]:
                 n=k
                 teams=100
                 params = [5e-4, 80, 24  ,30000,0,1]
