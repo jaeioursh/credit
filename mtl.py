@@ -102,7 +102,7 @@ def test1(trial,k,n,train_flag,n_teams,save=1,params=None):
     controller = learner(n,k,env,train_flag,params)
     #controller.set_teams(n_teams)
     R=[]
-    for i in range(2001):
+    for i in range(4001):
 
         
         #controller.randomize()
@@ -184,11 +184,11 @@ if __name__=="__main__":
     else:
         for k in [4,6,8]:
             procs=[]
-            for train in [6]:
+            for train in range(7):
                 n=k
                 teams=100
                 params = [5e-4, 80, 24  ,30000,0,1]
-                for i in range(12):
+                for i in range(12,24):
                     p=mp.Process(target=test1,args=(i,k,n,train,teams,1,params))
                     p.start()
                     time.sleep(0.05)
