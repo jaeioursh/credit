@@ -27,7 +27,7 @@ for q in [3,0,1,2,4,5,6]:#[1,0,3,4,5]:#,3,4,5,7,9]:
     print(q)
 
     mint=10000
-    for i in range(12):
+    for i in range(12,24):
         log = logger.logger()
         
         try:
