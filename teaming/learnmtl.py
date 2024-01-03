@@ -122,7 +122,11 @@ class learner:
         self.types=types
         self.team=[]
         self.index=[]
-        self.Dapprox=[Net() for i in range(self.types)]
+        #self.Dapprox=[Net() for i in range(self.types)]
+        if train_flag==3:
+            self.Dapprox=[Net(self.hidden,self.lr,0,opti,acti) for i in range(self.types)]
+        else:
+            self.Dapprox=[Net(self.hidden,self.lr,2,opti,acti) for i in range(self.types)]
         flg=0
         if train_flag==0 or train_flag==6 or train_flag==8:
             flg=2
@@ -137,7 +141,8 @@ class learner:
         self.test_teams=self.every_team
         sim.data["Number of Policies"]=32
 
-        self.hist=[deque(maxlen=len(self.test_teams)*2000) for i in range(types)]
+        #self.hist=[deque(maxlen=len(self.test_teams)*2000) for i in range(types)]
+        self.hist=[deque(maxlen=self.replay_size) for i in range(types)]
         self.histalign=[deque(maxlen=self.replay_size) for i in range(types)]
 
         initCcea(input_shape=8, num_outputs=2, num_units=20, num_types=types)(sim.data)
@@ -391,9 +396,9 @@ class learner:
     def updateD(self,env):
         
         for i in np.unique(np.array(self.team)):
-            for q in range(64):
+            for q in range(100):
                 S,A,D=[],[],[]
-                SAD=robust_sample(self.hist[i],100)
+                SAD=robust_sample(self.hist[i],self.batch)
                 #SAD+=robust_sample(self.zero[i],100)
                 for samp in SAD:
                     S.append(samp[0])

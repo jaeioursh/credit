@@ -27,7 +27,7 @@ for q in [3,0,1,2,4,5,6]:#[1,0,3,4,5]:#,3,4,5,7,9]:
     print(q)
 
     mint=10000
-    for i in range(12,24):
+    for i in range(24):
         log = logger.logger()
         
         try:
@@ -66,7 +66,7 @@ for q in [3,0,1,2,4,5,6]:#[1,0,3,4,5]:#,3,4,5,7,9]:
     T=[t[:mint] for t in T]
     
     print(T)
-    std=np.std(T,axis=0)/np.sqrt(12)
+    std=np.std(T,axis=0)/np.sqrt(24)
     Tm=np.mean(T,axis=0)
     
     print(T,std,Tm)

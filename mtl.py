@@ -182,20 +182,21 @@ if __name__=="__main__":
         print(s.getvalue())
         
     else:
-        for k in [4,6,8]:
-            procs=[]
-            for train in range(7):
-                n=k
-                teams=100
-                params = [5e-4, 80, 24  ,30000,0,1]
-                for i in range(24,36):
-                    p=mp.Process(target=test1,args=(i,k,n,train,teams,1,params))
-                    p.start()
-                    time.sleep(0.05)
-                    procs.append(p)
-                    #p.join()
-                for p in procs:
-                    p.join()
+        for batch in range(3):
+            for k in [4,6,8]:
+                procs=[]
+                for train in [3,6]:
+                    n=k
+                    teams=100
+                    params = [5e-4, 80, 24  ,30000,0,1]
+                    for i in range(12):
+                        p=mp.Process(target=test1,args=(i+batch*12,k,n,train,teams,1,params))
+                        p.start()
+                        time.sleep(0.05)
+                        procs.append(p)
+                        #p.join()
+                    for p in procs:
+                        p.join()
 
 # 100 - static
 # 200 - minimax single
